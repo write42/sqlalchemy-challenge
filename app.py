@@ -22,14 +22,6 @@ inspector = inspect(engine)
 df = pd.read_sql("SELECT date,prcp FROM measurement WHERE date > '2016-08-23'",conn)
 df_next = df.dropna().sort_values("date")
 
-all_rain=[]
-
-for date,prcp in df_next:
-    rain_dict={}
-    rain_dict["date"] = date
-    rain_dict["prcp"] = prcp
-    all_rain.append(rain_dict)
-
 app = Flask(__name__)
 
 @app.route("/")
@@ -44,10 +36,18 @@ def home():
     )
 @app.route("/api/v1.0/precipitation")
 def rain():
+    all_rain=[]
+
+    for date,prcp in df_next:
+        rain_dict={}
+        rain_dict["date"] = date
+        rain_dict["prcp"] = prcp
+        all_rain.append(rain_dict)
     return jsonify(all_rain)
 
 @app.route("/api/v1.0/stations")
 def station():
+    
     return jsonify()
 
 @app.route("/api/v1.0/tobs")
