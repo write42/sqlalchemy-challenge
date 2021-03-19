@@ -1,5 +1,6 @@
-from flask import Flask
+from flask import Flask, jsonify
 import sqlalchemy
+import pandas as pd
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, func, inspect
@@ -47,18 +48,43 @@ def rain():
 
 @app.route("/api/v1.0/stations")
 def station():
-    
-    return jsonify()
+    station_count = list(session.query(station.station))
+    return jsonify(station_count)
 
 @app.route("/api/v1.0/tobs")
 def temp():
-    return jsonify()
+    temp = pd.read_sql("SELECT station,tobs FROM measurement WHERE (date > '2016-08-23' AND station='USC00519281')",conn)
+    temp = temp.dropna()
+    temp
+    return jsonify(temp)
 
 @app.route("/api/v1.0/<start>")
 def start():
+    low_temp = session.query(measurement.station, func.min(measurement.tobs))\
+            .group_by(measurement.station)\
+            .order_by(func.count(measurement.station).desc()).first()
+    high_temp = session.query(measurement.station, func.max(measurement.tobs))\
+            .group_by(measurement.station)\
+            .order_by(func.count(measurement.station).desc()).first()
+
+    avg_temp = session.query(measurement.station, func.avg(measurement.tobs))\
+            .group_by(measurement.station)\
+            .order_by(func.count(measurement.station).desc()).first()
+    return jsonify()
 
 @app.route("/api/v1.0/<start>/<end>")
 def end():
+    low_temp = session.query(measurement.station, func.min(measurement.tobs))\
+            .group_by(measurement.station)\
+            .order_by(func.count(measurement.station).desc()).first()
+    high_temp = session.query(measurement.station, func.max(measurement.tobs))\
+            .group_by(measurement.station)\
+            .order_by(func.count(measurement.station).desc()).first()
 
+    avg_temp = session.query(measurement.station, func.avg(measurement.tobs))\
+            .group_by(measurement.station)\
+            .order_by(func.count(measurement.station).desc()).first()
+    return jsonify()
+    
 if __name__ == "__main__":
     app.run(debug=True)    
