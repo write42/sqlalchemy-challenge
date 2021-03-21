@@ -29,25 +29,25 @@ app = Flask(__name__)
 def home():
     return (
         f"Available Routes:<br/>"
-        f"/api/v1.0/precipitation"
-        f"/api/v1.0/stations"
-        f"/api/v1.0/tobs"
-        f"/api/v1.0/<start>"
-        f"/api/v1.0/<start>/<end>"
+        f"/api/v1.0/precipitation<br/>"
+        f"/api/v1.0/stations<br/>"
+        f"/api/v1.0/tobs<br/>"
+        f"/api/v1.0/start<br/>"
+        f"/api/v1.0/<start>/<end><br/>"
     )
 @app.route("/api/v1.0/precipitation")
 def rain():
-    all_rain=[]
-
-    for date,prcp in df_next:
+    rain_date = session.query(measurement.date,measurement.prcp).order_by(measurement.date)
+    rain_list=[]
+    for row in rain_date:
         rain_dict={}
-        rain_dict["date"] = date
-        rain_dict["prcp"] = prcp
-        all_rain.append(rain_dict)
-    return jsonify(all_rain)
+        rain_dict["date"] = row.date
+        rain_dict["prcp"] = row.prcp
+        rain_list.append(rain_dict)
+    return jsonify(rain_list)
 
 @app.route("/api/v1.0/stations")
-def station():
+def stations():
     station_count = list(session.query(station.station))
     return jsonify(station_count)
 
@@ -59,7 +59,7 @@ def temp():
     return jsonify(temp)
 
 @app.route("/api/v1.0/<start>")
-def start():
+def start(begin):
     low_temp = session.query(measurement.station, func.min(measurement.tobs))\
             .group_by(measurement.station)\
             .order_by(func.count(measurement.station).desc()).first()
@@ -72,19 +72,19 @@ def start():
             .order_by(func.count(measurement.station).desc()).first()
     return jsonify()
 
-@app.route("/api/v1.0/<start>/<end>")
-def end():
-    low_temp = session.query(measurement.station, func.min(measurement.tobs))\
-            .group_by(measurement.station)\
-            .order_by(func.count(measurement.station).desc()).first()
-    high_temp = session.query(measurement.station, func.max(measurement.tobs))\
-            .group_by(measurement.station)\
-            .order_by(func.count(measurement.station).desc()).first()
+#@app.route("/api/v1.0/<start>/<end>")
+#def end(finish):
+#    low_temp = session.query(measurement.station, func.min(measurement.tobs))\
+#            .group_by(measurement.station)\
+#            .order_by(func.count(measurement.station).desc()).first()
+#    high_temp = session.query(measurement.station, func.max(measurement.tobs))\
+#            .group_by(measurement.station)\
+#            .order_by(func.count(measurement.station).desc()).first()
 
-    avg_temp = session.query(measurement.station, func.avg(measurement.tobs))\
-            .group_by(measurement.station)\
-            .order_by(func.count(measurement.station).desc()).first()
-    return jsonify()
-    
+#   avg_temp = session.query(measurement.station, func.avg(measurement.tobs))\
+#            .group_by(measurement.station)\
+#            .order_by(func.count(measurement.station).desc()).first()
+#    return jsonify()
+
 if __name__ == "__main__":
     app.run(debug=True)    
