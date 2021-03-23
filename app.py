@@ -53,10 +53,13 @@ def stations():
 
 @app.route("/api/v1.0/tobs")
 def temp():
-    temp = pd.read_sql("SELECT station,tobs FROM measurement WHERE (date > '2016-08-23' AND station='USC00519281')",conn)
-    temp = temp.dropna()
-    temp
-    return jsonify(temp)
+    station_active = session.query(measurement.station, func.count(measurement.station))\
+                .group_by(measurement.station)\
+                .order_by(func.count(measurement.station).desc()).first()
+    station_active_first = station_active[0]
+
+    station_year = session.query(measurement.date, measurement.prcp).filter(measurement.station == station_active_first).filter(measurement.date >= '2016-08-23').all()
+    return jsonify(station_year)
 
 @app.route("/api/v1.0/<start>")
 def start(begin):
