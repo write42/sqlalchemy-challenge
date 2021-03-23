@@ -33,7 +33,7 @@ def home():
         f"/api/v1.0/stations<br/>"
         f"/api/v1.0/tobs<br/>"
         f"/api/v1.0/start<br/>"
-        f"/api/v1.0/<start>/<end><br/>"
+        f"/api/v1.0/start/end"
     )
 @app.route("/api/v1.0/precipitation")
 def rain():
@@ -61,32 +61,39 @@ def temp():
     station_year = session.query(measurement.date, measurement.prcp).filter(measurement.station == station_active_first).filter(measurement.date >= '2016-08-23').all()
     return jsonify(station_year)
 
-@app.route("/api/v1.0/<start>")
-def start(begin):
+@app.route("/api/v1.0/temp/<start>")
+def start(start):
+    
     low_temp = session.query(measurement.station, func.min(measurement.tobs))\
-            .group_by(measurement.station)\
-            .order_by(func.count(measurement.station).desc()).first()
-    high_temp = session.query(measurement.station, func.max(measurement.tobs))\
-            .group_by(measurement.station)\
-            .order_by(func.count(measurement.station).desc()).first()
+             .filter(measurement.station==station_active_first)\
+             .group_by(measurement.station)\
+             .order_by(func.count(measurement.station).desc()).first()
+#     high_temp = session.query(measurement.station, func.max(measurement.tobs))\
+#             .filter(measurement.station==station_active_first)\
+#             .group_by(measurement.station)\
+#             .order_by(func.count(measurement.station).desc()).first()
 
-    avg_temp = session.query(measurement.station, func.avg(measurement.tobs))\
-            .group_by(measurement.station)\
-            .order_by(func.count(measurement.station).desc()).first()
-    return jsonify()
+#     avg_temp = session.query(measurement.station, func.avg(measurement.tobs))\
+#             .filter(measurement.station==station_active_first)\
+#             .group_by(measurement.station)\
+#             .order_by(func.count(measurement.station).desc()).first() 
+    return jsonify(low_temp)
 
 #@app.route("/api/v1.0/<start>/<end>")
 #def end(finish):
-#    low_temp = session.query(measurement.station, func.min(measurement.tobs))\
-#            .group_by(measurement.station)\
-#            .order_by(func.count(measurement.station).desc()).first()
-#    high_temp = session.query(measurement.station, func.max(measurement.tobs))\
-#            .group_by(measurement.station)\
-#            .order_by(func.count(measurement.station).desc()).first()
+    #low_temp = session.query(measurement.station, func.min(measurement.tobs))\
+    #        .filter(measurement.station==station_active_first)\
+    #        .group_by(measurement.station)\
+    #        .order_by(func.count(measurement.station).desc()).first()
+    #high_temp = session.query(measurement.station, func.max(measurement.tobs))\
+    #        .filter(measurement.station==station_active_first)\
+    #        .group_by(measurement.station)\
+    #        .order_by(func.count(measurement.station).desc()).first()
 
-#   avg_temp = session.query(measurement.station, func.avg(measurement.tobs))\
-#            .group_by(measurement.station)\
-#            .order_by(func.count(measurement.station).desc()).first()
+    #avg_temp = session.query(measurement.station, func.avg(measurement.tobs))\
+    #        .filter(measurement.station==station_active_first)\
+    #        .group_by(measurement.station)\
+    #        .order_by(func.count(measurement.station).desc()).first()
 #    return jsonify()
 
 if __name__ == "__main__":
