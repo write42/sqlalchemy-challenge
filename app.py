@@ -32,8 +32,8 @@ def home():
         f"/api/v1.0/precipitation<br/>"
         f"/api/v1.0/stations<br/>"
         f"/api/v1.0/tobs<br/>"
-        f"/api/v1.0/start<br/>"
-        f"/api/v1.0/start/end"
+        f"/api/v1.0/temp/start<br/>"
+        f"/api/v1.0/temp/start/end"
     )
 @app.route("/api/v1.0/precipitation")
 def rain():
@@ -63,11 +63,13 @@ def temp():
 
 @app.route("/api/v1.0/temp/<start>")
 def start(start):
-    
-    low_temp = session.query(measurement.station, func.min(measurement.tobs))\
-             .filter(measurement.station==station_active_first)\
-             .group_by(measurement.station)\
-             .order_by(func.count(measurement.station).desc()).first()
+    temps = session.query(func.min(measurement.tobs),func.max(measurement.tobs),func.avg(measurement.tobs))\
+        .filter(measurement.date >= start).all()
+            
+#    low_temp = session.query(measurement.station, func.min(measurement.tobs))\
+#             .filter(measurement.station==station_active_first)\
+#             .group_by(measurement.station)\
+#             .order_by(func.count(measurement.station).desc()).first()
 #     high_temp = session.query(measurement.station, func.max(measurement.tobs))\
 #             .filter(measurement.station==station_active_first)\
 #             .group_by(measurement.station)\
@@ -77,10 +79,12 @@ def start(start):
 #             .filter(measurement.station==station_active_first)\
 #             .group_by(measurement.station)\
 #             .order_by(func.count(measurement.station).desc()).first() 
-    return jsonify(low_temp)
+    return jsonify(temps)
 
-#@app.route("/api/v1.0/<start>/<end>")
-#def end(finish):
+@app.route("/api/v1.0/temp/<start>/<end>")
+def end(start,end):
+    limit_date = session.query(func.min(measurement.tobs), func.avg(measurement.tobs), func.max(measurement.tobs)).\
+        filter(measurement.date >= start).filter(measurement.date <= end).all()
     #low_temp = session.query(measurement.station, func.min(measurement.tobs))\
     #        .filter(measurement.station==station_active_first)\
     #        .group_by(measurement.station)\
@@ -94,7 +98,7 @@ def start(start):
     #        .filter(measurement.station==station_active_first)\
     #        .group_by(measurement.station)\
     #        .order_by(func.count(measurement.station).desc()).first()
-#    return jsonify()
+    return jsonify(limit_date)
 
 if __name__ == "__main__":
     app.run(debug=True)    
